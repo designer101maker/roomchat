@@ -1,89 +1,252 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Room</title>
+  <!-- Favicon placeholder with standard chat bubble emoji -->
+  <link id="favicon" rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://w3.org viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://jsdelivr.net"></script>
+  <!-- Custom Base Font Style matching iOS Ecosystem -->
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    /* Hide scrollbar tracks for modern, cleaner look while maintaining functionality */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-zinc-900 dark:text-zinc-100 h-screen flex flex-col antialiased transition-colors duration-200">
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/13.2.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/13.2.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+  <!-- Header Section -->
+  <header class="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border-b border-gray-200 dark:border-zinc-700/50 sticky top-0 z-10 px-4 py-3 flex items-center justify-between shadow-xs">
+    <div class="flex flex-col">
+      <h1 class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Active Chat Room</h1>
+      <span id="room-display" class="text-base font-bold text-gray-800 dark:text-zinc-100 tracking-tight">Loading Room...</span>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
+    <button id="copy-btn" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-full transition-all active:scale-95 shadow-sm cursor-pointer">
+      <span>Copy Invite Link</span>
+    </button>
+  </header>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+  <!-- Chat Messages Container -->
+  <main id="chat-container" class="flex-1 overflow-y-auto px-4 py-4 space-y-3 no-scrollbar max-w-3xl mx-auto w-full">
+    <!-- Messages are injected programmatically -->
+  </main>
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+  <!-- Input Footer Dock -->
+  <footer class="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border-t border-gray-200 dark:border-zinc-700/50 p-3 sticky bottom-0 z-10 max-w-3xl mx-auto w-full rounded-t-2xl sm:mb-2 sm:shadow-lg">
+    <form id="message-form" class="flex items-center gap-2">
+      <input 
+        id="message-input" 
+        type="text" 
+        placeholder="iMessage" 
+        autocomplete="off"
+        class="flex-1 px-4 py-2 bg-gray-100 dark:bg-zinc-700/50 border border-transparent focus:border-blue-500/30 rounded-full text-sm outline-none transition-all placeholder-gray-400 dark:placeholder-zinc-500 text-gray-900 dark:text-zinc-100"
+      />
+      <button 
+        id="send-btn" 
+        type="submit" 
+        class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all active:scale-90 flex items-center justify-center cursor-pointer shadow-xs disabled:opacity-50"
+      >
+        <!-- Arrow Up SVG Icon -->
+        <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+        </svg>
+      </button>
+    </form>
+  </footer>
+
+  <!-- Firebase Script Integration Boilerplate -->
+  <script type="module">
+    import { initializeApp } from "https://gstatic.com";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      query, 
+      where, 
+      orderBy, 
+      onSnapshot, 
+      serverTimestamp 
+    } from "https://gstatic.com";
+
+    // 1. REPLACE WITH YOUR FIREBASE CONFIGURATION DATA
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialise Firebase Apps
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 2. Local State Management & Anonymous Setup
+    let currentUsername = localStorage.getItem('chat_username');
+    if (!currentUsername) {
+      currentUsername = `User_${Math.floor(1000 + Math.random() * 9000)}`;
+      localStorage.setItem('chat_username', currentUsername);
+    }
+
+    // 3. Routing Engine (Query Param Check/Gen)
+    function getRoomId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let room = urlParams.get('room');
+      
+      if (!room) {
+        // Generate random 6 character AlphaNumeric string room ID
+        room = Math.random().toString(36).substring(2, 8).toUpperCase();
+        urlParams.set('room', room);
+        const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+        window.history.pushState({ path: newUrl }, '', newUrl);
+      }
+      return room.toUpperCase();
+    }
+
+    const currentRoomId = getRoomId();
+    document.getElementById('room-display').textContent = `#${currentRoomId}`;
+    const defaultTitle = `Chat Room: ${currentRoomId}`;
+    document.title = defaultTitle;
+
+    const defaultFavicon = "data:image/svg+xml,<svg xmlns=%22http://w3.org viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>";
+    const alertFavicon = "data:image/svg+xml,<svg xmlns=%22http://w3.org viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>😊</text></svg>";
+
+    // 4. Dom Selectors
+    const chatContainer = document.getElementById('chat-container');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const copyBtn = document.getElementById('copy-btn');
+    const faviconEl = document.getElementById('favicon');
+
+    // 5. Sharing System
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = "<span>Copied! ✓</span>";
+        copyBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+          copyBtn.classList.replace('bg-emerald-600', 'bg-blue-600');
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy room link: ', err);
+      }
+    });
+
+    // 6. Database Operations & Listener Pipeline
+    const messagesRef = collection(db, "messages");
+    const roomQuery = query(
+      messagesRef, 
+      where("roomId", "==", currentRoomId), 
+      orderBy("timestamp", "asc")
+    );
+
+    let isInitialLoad = true;
+
+    onSnapshot(roomQuery, (snapshot) => {
+      // Keep track of whether we received a live message addition
+      let hasNewMessage = false;
+
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const msgData = change.doc.data();
+          renderMessage(msgData);
+          if (!isInitialLoad) {
+            hasNewMessage = true;
+          }
         }
       });
-    </script>
-  </body>
+
+      // After rendering elements, slide smoothly down into alignment
+      scrollToBottom();
+      isInitialLoad = false;
+
+      // Handle unread updates across the visibility boundary
+      if (hasNewMessage && document.hidden) {
+        document.title = "😊 New Message!";
+        faviconEl.setAttribute('href', alertFavicon);
+      }
+    });
+
+    // 7. Message Element Generation Strategy
+    function renderMessage(data) {
+      const isMe = data.sender === currentUsername;
+      const wrapper = document.createElement('div');
+      wrapper.className = `flex flex-col w-full ${isMe ? 'items-end' : 'items-start'}`;
+
+      // System fallback check for pending server timestamps
+      const formattedTime = data.timestamp 
+        ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+        : 'Just now';
+
+      wrapper.innerHTML = `
+        <span class="text-[10px] text-gray-400 dark:text-zinc-500 mb-0.5 px-2 tracking-wide font-medium">
+          ${isMe ? 'You' : data.sender} • ${formattedTime}
+        </span>
+        <div class="max-w-[75%] px-3.5 py-2 rounded-2xl text-sm font-normal break-words leading-relaxed tracking-wide shadow-xs
+          ${isMe 
+            ? 'bg-blue-600 text-white rounded-br-none' 
+            : 'bg-gray-200 dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 rounded-bl-none'
+          }">
+          ${escapeHTML(data.text)}
+        </div>
+      `;
+      chatContainer.appendChild(wrapper);
+    }
+
+    // Form Event Handler
+    messageForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = messageInput.value.trim();
+      if (!text) return;
+
+      messageInput.value = '';
+
+      try {
+        await addDoc(messagesRef, {
+          roomId: currentRoomId,
+          sender: currentUsername,
+          text: text,
+          timestamp: serverTimestamp()
+        });
+      } catch (error) {
+        console.error("Error broadcast failing: ", error);
+      }
+    });
+
+    // 8. Tab Visibility Interface Realignment
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        document.title = defaultTitle;
+        faviconEl.setAttribute('href', defaultFavicon);
+      }
+    });
+
+    // Helper Utility Methods
+    function scrollToBottom() {
+      chatContainer.scrollTo({
+        top: chatContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+  </script>
+</body>
 </html>
