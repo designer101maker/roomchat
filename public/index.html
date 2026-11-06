@@ -64,7 +64,7 @@
     </form>
   </footer>
 
-  <!-- Firebase Script Integration Boilerplate -->
+  <!-- Fixed Firebase SDK v11 imports -->
   <script type="module">
     import { initializeApp } from "https://gstatic.com";
     import { 
@@ -78,7 +78,7 @@
       serverTimestamp 
     } from "https://gstatic.com";
 
-    // 1. REPLACE WITH YOUR FIREBASE CONFIGURATION DATA
+    // IMPORTANT: INSERT YOUR FIREBASE APP CONFIG KEYS HERE
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_AUTH_DOMAIN",
@@ -88,24 +88,23 @@
       appId: "YOUR_APP_ID"
     };
 
-    // Initialise Firebase Apps
+    // Initialize Firebase Services
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 2. Local State Management & Anonymous Setup
+    // Setup Local Identity Engine
     let currentUsername = localStorage.getItem('chat_username');
     if (!currentUsername) {
       currentUsername = `User_${Math.floor(1000 + Math.random() * 9000)}`;
       localStorage.setItem('chat_username', currentUsername);
     }
 
-    // 3. Routing Engine (Query Param Check/Gen)
+    // Parse and track dynamic room channels via Web API routing URL parameters
     function getRoomId() {
       const urlParams = new URLSearchParams(window.location.search);
       let room = urlParams.get('room');
       
       if (!room) {
-        // Generate random 6 character AlphaNumeric string room ID
         room = Math.random().toString(36).substring(2, 8).toUpperCase();
         urlParams.set('room', room);
         const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
@@ -116,20 +115,19 @@
 
     const currentRoomId = getRoomId();
     document.getElementById('room-display').textContent = `#${currentRoomId}`;
-    const defaultTitle = `Chat Room: ${currentRoomId}`;
-    document.title = defaultTitle;
+    document.title = `Chat Room: ${currentRoomId}`;
 
     const defaultFavicon = "data:image/svg+xml,<svg xmlns=%22http://w3.org viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>";
-    const alertFavicon = "data:image/svg+xml,<svg xmlns=%22http://w3.org viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>😊</text></svg>";
+    const alertFavicon = "data:image/svg+xml,<svg xmlns=%22http://w3.org viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚠️</text></svg>";
 
-    // 4. Dom Selectors
+    // DOM Target Selectors
     const chatContainer = document.getElementById('chat-container');
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
     const copyBtn = document.getElementById('copy-btn');
     const faviconEl = document.getElementById('favicon');
 
-    // 5. Sharing System
+    // Clipboard Invitation Logic
     copyBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(window.location.href);
@@ -145,7 +143,39 @@
       }
     });
 
-    // 6. Database Operations & Listener Pipeline
+    // Reset alert tracking markers when user refocuses app canvas window tabs
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        document.title = `Chat Room: ${currentRoomId}`;
+        faviconEl.setAttribute('href', defaultFavicon);
+      }
+    });
+
+    // Scroll Anchoring Method
+    function scrollToBottom() {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Handle outbound Message uploads to Firestore DB
+    messageForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const messageText = messageInput.value.trim();
+      if (!messageText) return;
+
+      try {
+        messageInput.value = ''; // Instantly clear input for snappy UI responsiveness
+        await addDoc(collection(db, "messages"), {
+          roomId: currentRoomId,
+          sender: currentUsername,
+          text: messageText,
+          timestamp: serverTimestamp()
+        });
+      } catch (error) {
+        console.error("Error sending document structural data: ", error);
+      }
+    });
+
+    // Remote Database Listener Streams Pipeline
     const messagesRef = collection(db, "messages");
     const roomQuery = query(
       messagesRef, 
@@ -156,7 +186,6 @@
     let isInitialLoad = true;
 
     onSnapshot(roomQuery, (snapshot) => {
-      // Keep track of whether we received a live message addition
       let hasNewMessage = false;
 
       snapshot.docChanges().forEach((change) => {
@@ -169,24 +198,21 @@
         }
       });
 
-      // After rendering elements, slide smoothly down into alignment
       scrollToBottom();
       isInitialLoad = false;
 
-      // Handle unread updates across the visibility boundary
       if (hasNewMessage && document.hidden) {
-        document.title = "😊 New Message!";
+        document.title = "📩 New Message!";
         faviconEl.setAttribute('href', alertFavicon);
       }
     });
 
-    // 7. Message Element Generation Strategy
+    // Dynamic Element Generation Strategy
     function renderMessage(data) {
       const isMe = data.sender === currentUsername;
       const wrapper = document.createElement('div');
       wrapper.className = `flex flex-col w-full ${isMe ? 'items-end' : 'items-start'}`;
 
-      // System fallback check for pending server timestamps
       const formattedTime = data.timestamp 
         ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
         : 'Just now';
@@ -195,53 +221,18 @@
         <span class="text-[10px] text-gray-400 dark:text-zinc-500 mb-0.5 px-2 tracking-wide font-medium">
           ${isMe ? 'You' : data.sender} • ${formattedTime}
         </span>
-        <div class="max-w-[75%] px-3.5 py-2 rounded-2xl text-sm font-normal break-words leading-relaxed tracking-wide shadow-xs
-          ${isMe 
-            ? 'bg-blue-600 text-white rounded-br-none' 
-            : 'bg-gray-200 dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 rounded-bl-none'
-          }">
-          ${escapeHTML(data.text)}
+        <div class="max-w-[75%] px-3.5 py-2 rounded-2xl text-sm ${
+          isMe 
+            ? 'bg-blue-600 text-white rounded-tr-none' 
+            : 'bg-gray-200 dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 rounded-tl-none'
+        }">
+          <p class="leading-relaxed break-words">${escapeHTML(data.text)}</p>
         </div>
       `;
       chatContainer.appendChild(wrapper);
     }
 
-    // Form Event Handler
-    messageForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = messageInput.value.trim();
-      if (!text) return;
-
-      messageInput.value = '';
-
-      try {
-        await addDoc(messagesRef, {
-          roomId: currentRoomId,
-          sender: currentUsername,
-          text: text,
-          timestamp: serverTimestamp()
-        });
-      } catch (error) {
-        console.error("Error broadcast failing: ", error);
-      }
-    });
-
-    // 8. Tab Visibility Interface Realignment
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {
-        document.title = defaultTitle;
-        faviconEl.setAttribute('href', defaultFavicon);
-      }
-    });
-
-    // Helper Utility Methods
-    function scrollToBottom() {
-      chatContainer.scrollTo({
-        top: chatContainer.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-
+    // Helper safety sanitizer to prevent script manipulation text injection exploits
     function escapeHTML(str) {
       return str.replace(/[&<>'"]/g, 
         tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
